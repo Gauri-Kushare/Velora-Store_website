@@ -1,41 +1,55 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
-import { X, Heart, Shield, Check, ArrowRight } from 'lucide-react';
+import { X, Heart, Check, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Product } from '../../types/store';
 
-export const QuickViewModal: React.FC = () => {
+interface QuickViewContentProps {
+  product: Product;
+}
+
+const QuickViewContent: React.FC<QuickViewContentProps> = ({ product }) => {
   const {
-    quickViewProduct,
     closeQuickView,
     addToCart,
     formatPrice,
     toggleWishlist,
     isWishlisted,
+    openSizeGuide,
   } = useStore();
 
-  if (!quickViewProduct) return null;
+  const [selectedColor, setSelectedColor] = useState(product.colors[0]);
+  const [selectedSize, setSelectedSize] = useState(product.sizes[0] || 'M');
+  const [quantity] = useState(1);
+  const [activeImage, setActiveImage] = useState(product.images.main);
 
-  const [selectedColor, setSelectedColor] = useState(quickViewProduct.colors[0]);
-  const [selectedSize, setSelectedSize] = useState(quickViewProduct.sizes[0] || 'M');
-  const [quantity, setQuantity] = useState(1);
-  const [activeImage, setActiveImage] = useState(quickViewProduct.images.main);
-
-  const isFavorite = isWishlisted(quickViewProduct.id);
+  const isFavorite = isWishlisted(product.id);
 
   const handleAdd = () => {
-    addToCart(quickViewProduct, selectedColor, selectedSize, quantity);
+    addToCart(product, selectedColor, selectedSize, quantity);
     closeQuickView();
   };
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-charcoal/70 backdrop-blur-sm transition-opacity"
+      {/* Backdrop with luxury blur */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="fixed inset-0 bg-charcoal/70 backdrop-blur-md"
         onClick={closeQuickView}
       />
 
-      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6">
-        <div className="relative transform overflow-hidden bg-ivory text-left shadow-modal transition-all w-full max-w-4xl border border-accent-border my-8">
+      <div className="flex min-h-full items-center justify-center p-4 text-center sm:p-6 pointer-events-none">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 16 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          className="relative overflow-hidden bg-ivory text-left shadow-modal w-full max-w-4xl border border-accent-border my-8 pointer-events-auto"
+        >
           {/* Close button */}
           <button
             onClick={closeQuickView}
@@ -51,55 +65,55 @@ export const QuickViewModal: React.FC = () => {
               <div className="aspect-[3/4] overflow-hidden bg-ivory-300">
                 <img
                   src={activeImage}
-                  alt={quickViewProduct.name}
+                  alt={product.name}
                   className="w-full h-full object-cover object-top transition-all duration-300"
                 />
               </div>
 
               {/* Thumbnails if available */}
-              {quickViewProduct.images.back && (
+              {product.images.back && (
                 <div className="flex gap-3 mt-4">
                   <button
-                    onClick={() => setActiveImage(quickViewProduct.images.main)}
+                    onClick={() => setActiveImage(product.images.main)}
                     className={`w-16 h-20 border overflow-hidden ${
-                      activeImage === quickViewProduct.images.main
+                      activeImage === product.images.main
                         ? 'border-charcoal'
                         : 'border-accent-border opacity-70'
                     }`}
                   >
                     <img
-                      src={quickViewProduct.images.main}
+                      src={product.images.main}
                       alt="Front"
                       className="w-full h-full object-cover object-top"
                     />
                   </button>
 
                   <button
-                    onClick={() => setActiveImage(quickViewProduct.images.back!)}
+                    onClick={() => setActiveImage(product.images.back!)}
                     className={`w-16 h-20 border overflow-hidden ${
-                      activeImage === quickViewProduct.images.back
+                      activeImage === product.images.back
                         ? 'border-charcoal'
                         : 'border-accent-border opacity-70'
                     }`}
                   >
                     <img
-                      src={quickViewProduct.images.back!}
+                      src={product.images.back!}
                       alt="Back"
                       className="w-full h-full object-cover object-top"
                     />
                   </button>
 
-                  {quickViewProduct.images.detail && (
+                  {product.images.detail && (
                     <button
-                      onClick={() => setActiveImage(quickViewProduct.images.detail!)}
+                      onClick={() => setActiveImage(product.images.detail!)}
                       className={`w-16 h-20 border overflow-hidden ${
-                        activeImage === quickViewProduct.images.detail
+                        activeImage === product.images.detail
                           ? 'border-charcoal'
                           : 'border-accent-border opacity-70'
                       }`}
                     >
                       <img
-                        src={quickViewProduct.images.detail!}
+                        src={product.images.detail!}
                         alt="Detail"
                         className="w-full h-full object-cover"
                       />
@@ -115,10 +129,10 @@ export const QuickViewModal: React.FC = () => {
                 {/* Eyebrow / Category */}
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[11px] uppercase tracking-luxury text-charcoal/60 font-medium">
-                    {quickViewProduct.category} {quickViewProduct.badge && `· ${quickViewProduct.badge}`}
+                    {product.category} {product.badge && `· ${product.badge}`}
                   </span>
                   <button
-                    onClick={() => toggleWishlist(quickViewProduct.id)}
+                    onClick={() => toggleWishlist(product.id)}
                     className="text-charcoal hover:text-sand-dark transition-colors p-1"
                     aria-label="Wishlist"
                   >
@@ -132,15 +146,15 @@ export const QuickViewModal: React.FC = () => {
 
                 {/* Title & Price */}
                 <h2 className="font-serif text-2xl sm:text-3xl text-charcoal font-normal">
-                  {quickViewProduct.name}
+                  {product.name}
                 </h2>
                 <div className="flex items-baseline gap-3 mt-1.5">
                   <span className="text-lg font-medium text-charcoal">
-                    {formatPrice(quickViewProduct.price)}
+                    {formatPrice(product.price)}
                   </span>
-                  {quickViewProduct.originalPrice && (
+                  {product.originalPrice && (
                     <span className="text-xs text-charcoal/50 line-through">
-                      {formatPrice(quickViewProduct.originalPrice)}
+                      {formatPrice(product.originalPrice)}
                     </span>
                   )}
                 </div>
@@ -150,7 +164,7 @@ export const QuickViewModal: React.FC = () => {
 
                 {/* Description */}
                 <p className="text-xs sm:text-sm text-charcoal/70 font-light leading-relaxed mt-4">
-                  {quickViewProduct.description}
+                  {product.description}
                 </p>
 
                 {/* Color Selection */}
@@ -161,7 +175,7 @@ export const QuickViewModal: React.FC = () => {
                     </span>
                   </div>
                   <div className="flex gap-2">
-                    {quickViewProduct.colors.map((c) => (
+                    {product.colors.map((c) => (
                       <button
                         key={c.name}
                         onClick={() => setSelectedColor(c)}
@@ -191,15 +205,16 @@ export const QuickViewModal: React.FC = () => {
                     <span className="text-charcoal/60 uppercase tracking-luxury text-[10px] font-medium">
                       Size: <strong className="text-charcoal">{selectedSize}</strong>
                     </span>
-                    <a
-                      href="#size-guide"
+                    <button
+                      type="button"
+                      onClick={openSizeGuide}
                       className="text-[11px] text-charcoal/70 hover:text-charcoal underline underline-offset-4"
                     >
                       Size guide ↗
-                    </a>
+                    </button>
                   </div>
                   <div className="grid grid-cols-5 gap-2">
-                    {quickViewProduct.sizes.map((size) => (
+                    {product.sizes.map((size) => (
                       <button
                         key={size}
                         onClick={() => setSelectedSize(size)}
@@ -218,7 +233,7 @@ export const QuickViewModal: React.FC = () => {
                 {/* Key Details List */}
                 <div className="mt-5 pt-4 border-t border-accent-border/60">
                   <ul className="text-xs text-charcoal/70 space-y-1 font-light">
-                    {quickViewProduct.details.slice(0, 3).map((detail, idx) => (
+                    {product.details.slice(0, 3).map((detail, idx) => (
                       <li key={idx} className="flex items-center gap-2">
                         <span className="w-1 h-1 bg-sand rounded-full" />
                         <span>{detail}</span>
@@ -235,14 +250,26 @@ export const QuickViewModal: React.FC = () => {
                   onClick={handleAdd}
                   className="w-full py-3.5 bg-charcoal text-ivory text-xs uppercase tracking-luxury font-medium hover:bg-charcoal-800 transition-colors flex items-center justify-center gap-2 group"
                 >
-                  <span>Add to cart — {formatPrice(quickViewProduct.price * quantity)}</span>
+                  <span>Add to cart — {formatPrice(product.price * quantity)}</span>
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
+  );
+};
+
+export const QuickViewModal: React.FC = () => {
+  const { quickViewProduct } = useStore();
+
+  return (
+    <AnimatePresence>
+      {quickViewProduct && (
+        <QuickViewContent key={quickViewProduct.id} product={quickViewProduct} />
+      )}
+    </AnimatePresence>
   );
 };

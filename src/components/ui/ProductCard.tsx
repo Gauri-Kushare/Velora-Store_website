@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Product, ColorOption } from '../../types/store';
 import { useStore } from '../../context/StoreContext';
 import { Heart, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
@@ -9,7 +10,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) => {
-  const { formatPrice, openQuickView, addToCart, toggleWishlist, isWishlisted, navigateTo } = useStore();
+  const { formatPrice, addToCart, toggleWishlist, isWishlisted, navigateTo } = useStore();
   const [selectedColor, setSelectedColor] = useState<ColorOption>(product.colors[0]);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -24,9 +25,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
   const displayImage = isHovered && product.images.hover ? product.images.hover : product.images.main;
 
   return (
-    <article 
+    <motion.article 
       aria-label={product.name}
-      className="group relative flex flex-col cursor-pointer"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="group relative flex flex-col cursor-pointer transition-shadow duration-500 hover:shadow-[0_14px_30px_-15px_rgba(32,32,29,0.12)] p-1 rounded-sm"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -38,14 +41,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
         <img
           src={displayImage}
           alt={product.name}
-          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+          className="w-full h-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.045]"
           loading="lazy"
         />
 
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
           {product.badge ? (
-            <span className="bg-ivory/90 backdrop-blur-sm text-charcoal text-[10px] font-medium tracking-luxury uppercase px-2 py-0.5 border border-accent-border/40">
+            <span className="bg-ivory/90 backdrop-blur-sm text-charcoal text-[10px] font-medium tracking-luxury uppercase px-2 py-0.5 border border-accent-border/40 shadow-xs">
               {product.badge}
             </span>
           ) : (
@@ -53,25 +56,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
           )}
 
           {/* Wishlist Button */}
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.85 }}
             onClick={(e) => {
               e.stopPropagation();
               toggleWishlist(product.id);
             }}
             aria-label={`Save ${product.name} to wishlist`}
-            className="pointer-events-auto p-1.5 rounded-full bg-ivory/80 backdrop-blur-sm text-charcoal hover:text-sand-dark transition-all duration-200 hover:scale-110"
+            className="pointer-events-auto p-1.5 rounded-full bg-ivory/80 backdrop-blur-sm text-charcoal hover:text-sand-dark transition-all duration-200 hover:scale-110 shadow-xs"
           >
             <Heart
               className={`w-3.5 h-3.5 stroke-[1.5] ${
                 isFavorite ? 'fill-sand text-sand-dark' : 'text-charcoal'
               }`}
             />
-          </button>
+          </motion.button>
         </div>
 
         {/* Quick Add Overlay on Hover (Desktop) */}
-        <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-auto">
+        <div className="absolute inset-x-3 bottom-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 ease-out pointer-events-auto">
           <button
             type="button"
             onClick={(e) => {
@@ -131,6 +135,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onSelect }) =
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 };

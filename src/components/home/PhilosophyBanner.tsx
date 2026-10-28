@@ -1,9 +1,12 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface PhilosophyBannerProps {
   onDiscoverStory?: () => void;
 }
+
+const luxuryEase = [0.22, 1, 0.36, 1] as const;
 
 export const PhilosophyBanner: React.FC<PhilosophyBannerProps> = ({ onDiscoverStory }) => {
   return (
@@ -11,18 +14,30 @@ export const PhilosophyBanner: React.FC<PhilosophyBannerProps> = ({ onDiscoverSt
       <div className="max-w-8xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch">
           {/* Left: Atmospheric Lifestyle Imagery */}
-          <div className="relative min-h-[340px] sm:min-h-[460px] lg:min-h-[580px] bg-ivory-200">
+          <motion.div
+            initial={{ opacity: 0, scale: 1.03 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, margin: '-50px' }}
+            transition={{ duration: 1, ease: luxuryEase }}
+            className="relative min-h-[340px] sm:min-h-[460px] lg:min-h-[580px] bg-ivory-200 overflow-hidden"
+          >
             <img
               src="/images/editorial-philosophy.jpg"
               alt="Woman resting in sculpted wooden chair in sun-drenched sanctuary"
-              className="w-full h-full object-cover object-center"
+              className="w-full h-full object-cover object-center transition-transform duration-1000 ease-out hover:scale-[1.02]"
               loading="lazy"
             />
-          </div>
+          </motion.div>
 
           {/* Right: Editorial Narrative Block */}
           <div className="bg-[#EFECE6] p-8 sm:p-14 lg:p-20 flex flex-col justify-center border-t lg:border-t-0 lg:border-l border-accent-border">
-            <div className="max-w-md">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-50px' }}
+              transition={{ duration: 0.8, ease: luxuryEase }}
+              className="max-w-md"
+            >
               <span className="text-[11px] uppercase tracking-[0.2em] text-charcoal/60 font-medium block mb-4">
                 OUR PHILOSOPHY
               </span>
@@ -46,7 +61,7 @@ export const PhilosophyBanner: React.FC<PhilosophyBannerProps> = ({ onDiscoverSt
                   <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>

@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { PRODUCTS } from '../../data/storeData';
-import { Search, X, ArrowRight } from 'lucide-react';
+import { Search, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const SearchModal: React.FC = () => {
   const { isSearchOpen, closeSearch, openQuickView, formatPrice } = useStore();
   const [query, setQuery] = useState('');
-
-  if (!isSearchOpen) return null;
 
   const filtered = query.trim()
     ? PRODUCTS.filter(
@@ -19,15 +18,27 @@ export const SearchModal: React.FC = () => {
     : PRODUCTS.slice(0, 4);
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm transition-opacity"
-        onClick={closeSearch}
-      />
+    <AnimatePresence>
+      {isSearchOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-charcoal/65 backdrop-blur-md"
+            onClick={closeSearch}
+          />
 
-      <div className="relative min-h-screen flex items-start justify-center p-4 sm:p-8 pt-20">
-        <div className="relative w-full max-w-2xl bg-ivory shadow-modal border border-accent-border overflow-hidden">
+          <div className="relative min-h-screen flex items-start justify-center p-4 sm:p-8 pt-16 sm:pt-24 pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, y: -16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.96, y: -16 }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="relative w-full max-w-2xl bg-ivory shadow-modal border border-accent-border overflow-hidden pointer-events-auto"
+            >
           {/* Search Input Bar */}
           <div className="p-4 sm:p-6 border-b border-accent-border flex items-center gap-3 bg-ivory-50">
             <Search className="w-5 h-5 text-charcoal/50 stroke-[1.5]" />
@@ -114,8 +125,10 @@ export const SearchModal: React.FC = () => {
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
+  )}
+</AnimatePresence>
   );
 };

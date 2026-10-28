@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { X, Heart, User, ArrowRight } from 'lucide-react';
 import { PageView } from '../../types/store';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const MobileMenuDrawer: React.FC = () => {
   const {
@@ -13,23 +14,33 @@ export const MobileMenuDrawer: React.FC = () => {
     navigateTo,
   } = useStore();
 
-  if (!isMobileMenuOpen) return null;
-
   const handleLinkClick = (page: PageView, param?: string) => {
     closeMobileMenu();
     navigateTo(page, param);
   };
 
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-charcoal/50 backdrop-blur-sm transition-opacity duration-300"
-        onClick={closeMobileMenu}
-      />
+    <AnimatePresence>
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden overflow-hidden">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-charcoal/50 backdrop-blur-sm"
+            onClick={closeMobileMenu}
+          />
 
-      {/* Drawer content */}
-      <div className="fixed inset-y-0 left-0 w-full max-w-xs bg-ivory shadow-drawer flex flex-col justify-between overflow-y-auto border-r border-accent-border">
+          {/* Drawer content */}
+          <motion.div
+            initial={{ x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={{ x: '-100%' }}
+            transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+            className="fixed inset-y-0 left-0 w-full max-w-xs bg-ivory shadow-drawer flex flex-col justify-between overflow-y-auto border-r border-accent-border"
+          >
         {/* Top Header */}
         <div>
           <div className="flex items-center justify-between px-6 py-5 border-b border-accent-border">
@@ -155,7 +166,9 @@ export const MobileMenuDrawer: React.FC = () => {
             </div>
           </div>
         </div>
+        </motion.div>
       </div>
-    </div>
+    )}
+  </AnimatePresence>
   );
 };

@@ -34,6 +34,9 @@ import { FAQPage } from './components/pages/FAQPage';
 import { ShippingReturnsPage } from './components/pages/ShippingReturnsPage';
 import { LegalPage } from './components/pages/LegalPage';
 import { Product } from './types/store';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const pageTransitionEase = [0.22, 1, 0.36, 1] as const;
 
 const StoreContent: React.FC = () => {
   const { currentPage, navigateTo, showToast } = useStore();
@@ -74,46 +77,57 @@ const StoreContent: React.FC = () => {
       {/* 2. Global Header with immediate cart counter & navigation */}
       <Header />
 
-      {/* 3. Main Dynamic Content Area */}
-      <main className="flex-1">
-        {currentPage === 'home' && (
-          <>
-            <HeroSection onShopClick={handleShopClick} />
-            <ValuePropsBar />
-            <CategoryGrid onCategorySelect={handleCategorySelect} />
-            <ProductShowcase
-              onProductSelect={handleProductSelect}
-              onViewAll={handleShopClick}
-            />
-            <PhilosophyBanner onDiscoverStory={handleDiscoverStory} />
-            <QuoteSection />
-            <JournalSection onArticleClick={handleArticleClick} />
-            <PillarsSection />
-            <NewsletterSection />
-          </>
-        )}
+      {/* 3. Main Dynamic Content Area with Smooth Page Transitions */}
+      <main className="flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentPage}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.35, ease: pageTransitionEase }}
+            className="w-full"
+          >
+            {currentPage === 'home' && (
+              <>
+                <HeroSection onShopClick={handleShopClick} />
+                <ValuePropsBar />
+                <CategoryGrid onCategorySelect={handleCategorySelect} />
+                <ProductShowcase
+                  onProductSelect={handleProductSelect}
+                  onViewAll={handleShopClick}
+                />
+                <PhilosophyBanner onDiscoverStory={handleDiscoverStory} />
+                <QuoteSection />
+                <JournalSection onArticleClick={handleArticleClick} />
+                <PillarsSection />
+                <NewsletterSection />
+              </>
+            )}
 
-        {currentPage === 'shop' && <ShopPage />}
+            {currentPage === 'shop' && <ShopPage />}
 
-        {currentPage === 'pdp' && <ProductDetailPage />}
+            {currentPage === 'pdp' && <ProductDetailPage />}
 
-        {currentPage === 'cart' && <CartPage />}
+            {currentPage === 'cart' && <CartPage />}
 
-        {currentPage === 'wishlist' && <WishlistPage />}
+            {currentPage === 'wishlist' && <WishlistPage />}
 
-        {currentPage === 'checkout' && <CheckoutPage />}
+            {currentPage === 'checkout' && <CheckoutPage />}
 
-        {currentPage === 'account' && <AccountPage />}
+            {currentPage === 'account' && <AccountPage />}
 
-        {currentPage === 'about' && <AboutPage />}
+            {currentPage === 'about' && <AboutPage />}
 
-        {currentPage === 'contact' && <ContactPage />}
+            {currentPage === 'contact' && <ContactPage />}
 
-        {currentPage === 'faq' && <FAQPage />}
+            {currentPage === 'faq' && <FAQPage />}
 
-        {currentPage === 'shipping-returns' && <ShippingReturnsPage />}
+            {currentPage === 'shipping-returns' && <ShippingReturnsPage />}
 
-        {(currentPage === 'privacy' || currentPage === 'terms') && <LegalPage />}
+            {(currentPage === 'privacy' || currentPage === 'terms') && <LegalPage />}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {/* 4. Global Footer */}

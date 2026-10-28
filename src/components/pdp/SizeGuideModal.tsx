@@ -1,23 +1,35 @@
 import React, { useState } from 'react';
 import { useStore } from '../../context/StoreContext';
 import { X, Ruler } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const SizeGuideModal: React.FC = () => {
   const { isSizeGuideOpen, closeSizeGuide } = useStore();
   const [unit, setUnit] = useState<'cm' | 'in'>('cm');
   const [activeTab, setActiveTab] = useState<'tops' | 'bottoms' | 'outerwear'>('tops');
 
-  if (!isSizeGuideOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div
-        className="fixed inset-0 bg-charcoal/70 backdrop-blur-sm transition-opacity"
-        onClick={closeSizeGuide}
-      />
+    <AnimatePresence>
+      {isSizeGuideOpen && (
+        <div className="fixed inset-0 z-50 overflow-y-auto">
+          {/* Backdrop with luxury blur */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-0 bg-charcoal/70 backdrop-blur-md"
+            onClick={closeSizeGuide}
+          />
 
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center">
-        <div className="relative transform overflow-hidden bg-ivory text-left shadow-modal transition-all w-full max-w-2xl border border-accent-border p-6 sm:p-8 my-8">
+          <div className="flex min-h-full items-center justify-center p-4 sm:p-6 text-center pointer-events-none">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+              className="relative overflow-hidden bg-ivory text-left shadow-modal w-full max-w-2xl border border-accent-border p-6 sm:p-8 my-8 pointer-events-auto"
+            >
           {/* Header */}
           <div className="flex items-center justify-between border-b border-accent-border pb-4">
             <div className="flex items-center gap-2">
@@ -191,8 +203,10 @@ export const SizeGuideModal: React.FC = () => {
               VELORA silhouettes are engineered with relaxed, architectural drape. If you are between sizes, we recommend ordering your true size for a relaxed tailored silhouette, or sizing down for a closer fit.
             </p>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
+  )}
+</AnimatePresence>
   );
 };

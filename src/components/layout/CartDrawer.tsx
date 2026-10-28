@@ -2,6 +2,7 @@ import React from 'react';
 import { useStore } from '../../context/StoreContext';
 import { STORE_CURRENCY } from '../../data/storeData';
 import { X, Plus, Minus, Trash2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface CartDrawerProps {
   onCheckout?: () => void;
@@ -17,11 +18,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
     updateQuantity,
     removeFromCart,
     formatPrice,
-    currency,
     navigateTo,
   } = useStore();
-
-  if (!isCartOpen) return null;
 
   const freeThreshold = STORE_CURRENCY.freeShippingThreshold;
   const isFreeShipping = cartTotal >= freeThreshold;
@@ -29,15 +27,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
   const progressPercent = Math.min(100, Math.round((cartTotal / freeThreshold) * 100));
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Dark backdrop */}
-      <div
-        className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm transition-opacity duration-300"
-        onClick={closeCart}
-      />
+    <AnimatePresence>
+      {isCartOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Dark backdrop with blur */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="fixed inset-0 bg-charcoal/60 backdrop-blur-sm"
+            onClick={closeCart}
+          />
 
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-        <div className="w-screen max-w-md bg-ivory shadow-drawer flex flex-col justify-between border-l border-accent-border">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10 pointer-events-none">
+            <motion.div
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="w-screen max-w-md bg-ivory shadow-drawer flex flex-col justify-between border-l border-accent-border pointer-events-auto"
+            >
           {/* Header */}
           <div className="px-6 py-5 border-b border-accent-border flex items-center justify-between bg-ivory-50">
             <div>
@@ -237,8 +247,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ onCheckout }) => {
               </div>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
+  )}
+</AnimatePresence>
   );
 };
