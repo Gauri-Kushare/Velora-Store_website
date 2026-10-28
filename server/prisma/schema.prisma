@@ -1,0 +1,224 @@
+// Prisma Schema for VELORA Luxury E-Commerce Store
+// Supports PostgreSQL (Supabase / Neon / AWS RDS) or SQLite for local dev
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  ATELIER_STAFF
+}
+
+enum OrderStatus {
+  CONFIRMED
+  IN_ATELIER
+  QUALITY_CHECK
+  DISPATCHED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum InventoryStatus {
+  IN_STOCK
+  LOW_STOCK
+  OUT_OF_STOCK
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  firstName    String
+  lastName     String
+  phone        String?
+  role         Role           @default(CUSTOMER)
+  tier         String         @default("Atelier Member")
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  addresses    Address[]
+  orders       Order[]
+  wishlist     WishlistItem[]
+  cartItems    CartItem[]
+
+  @@map("users")
+}
+
+model Address {
+  id          String   @id @default(uuid())
+  userId      String
+  firstName   String
+  lastName    String
+  phone       String
+  street      String
+  apartment   String?
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("India")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("addresses")
+}
+
+model Product {
+  id                String          @id // e.g. 'silk-shirt', 'everyday-blazer'
+  slug              String          @unique
+  name              String
+  subtitle          String
+  description       String
+  material          String
+  price             Int             // Price in INR (e.g. 6900 = ₹6,900)
+  originalPrice     Int?
+  badge             String?         // 'BESTSELLER', 'NEW', 'LIMITED'
+  category          String          // 'Shirts', 'Tailoring', 'Dresses', 'Knitwear', etc.
+  department        String          // 'Clothing', 'Tailoring', 'Accessories', etc.
+  inventoryStatus   InventoryStatus @default(IN_STOCK)
+  stockCount        Int             @default(25)
+  images            Json            // { main, hover, back, detail, gallery: [] }
+  details           Json            // string[]
+  care              Json            // string[]
+  delivery          String
+  isFeatured        Boolean         @default(false)
+  pairingProductIds Json            // string[] of product IDs
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  colors            ColorOption[]
+  sizeVariants      SizeVariant[]
+  orderItems        OrderItem[]
+  cartItems         CartItem[]
+  wishlistItems     WishlistItem[]
+
+  @@map("products")
+}
+
+model ColorOption {
+  id           String   @id @default(uuid())
+  productId    String
+  name         String   // e.g. 'Ivory', 'Sand', 'Onyx'
+  hex          String   // e.g. '#F7F4EE'
+  inStock      Boolean  @default(true)
+  imagePreview String?
+
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("color_options")
+}
+
+model SizeVariant {
+  id         String   @id @default(uuid())
+  productId  String
+  size       String   // e.g. 'XS', 'S', 'M', 'L', 'XL', '28'
+  inStock    Boolean  @default(true)
+  stockCount Int      @default(5)
+
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("size_variants")
+}
+
+model CartItem {
+  id            String   @id @default(uuid())
+  userId        String?
+  sessionId     String?  // For anonymous guest carts
+  productId     String
+  selectedColor String
+  selectedSize  String
+  quantity      Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("cart_items")
+}
+
+model WishlistItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("wishlist_items")
+}
+
+model Order {
+  id              String        @id // e.g. 'VEL-849201'
+  userId          String?
+  customerName    String
+  customerEmail   String
+  customerPhone   String
+  shippingAddress Json          // Full structured address snapshot
+  deliveryMethod  String        // 'Standard Atelier Delivery' or 'Express White-Glove Courier'
+  shippingFee     Int           @default(0)
+  subtotal        Int
+  discount        Int           @default(0)
+  total           Int
+  status          OrderStatus   @default(CONFIRMED)
+  paymentMethod   String        // 'Credit Card', 'UPI', 'Pay on Delivery'
+  paymentStatus   PaymentStatus @default(PAID)
+  paymentId       String?       // Payment gateway reference (Stripe/Razorpay)
+  giftNote        String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  name      String
+  color     String
+  size      String
+  quantity  Int      @default(1)
+  price     Int      // Snapshot price at time of purchase
+  image     String
+
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model PromotionCode {
+  id              String   @id @default(uuid())
+  code            String   @unique // e.g. 'VELORA10', 'ATELIER'
+  discountPercent Int?     // e.g. 10 for 10%
+  discountAmount  Int?     // e.g. 2000 for ₹2,000
+  minOrderAmount  Int      @default(0)
+  isActive        Boolean  @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime @default(now())
+
+  @@map("promotion_codes")
+}

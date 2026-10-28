@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-ivory: #F7F4EE;
+    --text-charcoal: #20201D;
+    --accent-sand: #B9A58A;
+    --border-soft: #E6E1D8;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    background-color: #F7F4EE;
+    color: #20201D;
+  }
+
+  body {
+    background-color: #F7F4EE;
+    color: #20201D;
+    overflow-x: hidden;
+  }
+
+  /* Custom subtle scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F7F4EE;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D3C5B2;
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B9A58A;
+  }
+}
+
+@layer utilities {
+  .font-display {
+    font-family: 'Cormorant Garamond', Didot, 'Bodoni MT', Georgia, serif;
+  }
+  
+  .font-body {
+    font-family: 'Plus Jakarta Sans', Inter, -apple-system, sans-serif;
+  }
+
+  /* Luxury subtle transitions */
+  .transition-luxury {
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Subtle image hover zoom */
+  .img-zoom {
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .img-zoom:hover {
+    transform: scale(1.04);
+  }
+}
